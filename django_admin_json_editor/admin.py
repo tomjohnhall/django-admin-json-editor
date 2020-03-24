@@ -8,14 +8,15 @@ from django.utils.safestring import mark_safe
 class JSONEditorWidget(forms.Widget):
     template_name = 'django_admin_json_editor/editor.html'
 
-    def __init__(self, schema, collapsed=True, sceditor=False, editor_options=None):
+    def __init__(self, schema, collapsed=True, sceditor=False, editor_options=None, attrs=None):
         super(JSONEditorWidget, self).__init__()
         self._schema = schema
         self._collapsed = collapsed
         self._sceditor = sceditor
         self._editor_options = editor_options or {}
+        self.attrs = attrs or {}
 
-    def render(self, name, value, attrs=None, renderer=None):
+    def render(self, name, value, renderer=None):
         if callable(self._schema):
             schema = self._schema(self)
         else:
@@ -36,6 +37,7 @@ class JSONEditorWidget(forms.Widget):
             'data': value,
             'sceditor': int(self._sceditor),
             'editor_options': json.dumps(editor_options),
+            'attrs': self.attrs
         }
         return mark_safe(render_to_string(self.template_name, context))
 
@@ -54,6 +56,8 @@ class JSONEditorWidget(forms.Widget):
             'django_admin_json_editor/jsoneditor/jsoneditor.min.js',
         ]
         if self._sceditor:
-            css['all'].append('django_admin_json_editor/sceditor/themes/default.min.css')
-            js.append('django_admin_json_editor/sceditor/jquery.sceditor.bbcode.min.js')
+            css['all'].append(
+                'django_admin_json_editor/sceditor/themes/default.min.css')
+            js.append(
+                'django_admin_json_editor/sceditor/jquery.sceditor.bbcode.min.js')
         return forms.Media(css=css, js=js)
